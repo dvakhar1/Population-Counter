@@ -51,22 +51,18 @@ Given this unusual grid, we can use a similar trick to answer queries in O(1) ti
 
 Notice this is O(1) work. 
 
-Note: A simpler approach to answering queries in O(1) time would be to pre-compute the answer to every possible query. But that would take O(x2y2) space and pre-processing time, and is not acceptable for version 3 of your program.
-
 Version 4: Smarter and Parallel
 
 As in version 2, the initial corner finding should be done in parallel. As in version 3, you should create the grid that allows O(1) queries. The first step of building the grid should be done in parallel using the ForkJoin Framework. The second step should remain sequential; just use the code you wrote in version 3. Parallelizing it is part of the Above & Beyond.
 
 To parallelize the first grid-building step, you will need each parallel subproblem to return a grid. To combine the results from two subproblems, you will need to add the contents of one grid to the other. Although for small grids doing this sequentially may be okay, you will need to parallelize this as well using another ForkJoin computation. (To test that this works correctly, you may need to set a sequential-cutoff lower than your final setting.)
 
-Note that your ForkJoin tasks will need several values that are the same for all tasks: the input array, the grid size, and the overall corners. Rather than passing many unchanging arguments in every constructor call, it is cleaner and probably faster to pass an object that has fields for all these unchanging values.
+
 
 Version 5: Smarter and Lock-Based
 
 Version 4 may suffer from doing a lot of grid-copying in the first grid-building step. An alternative is to have just one shared grid that different threads add to as they process different census-block-groups. But to avoid losing any of the data, that means grid elements need to be protected by locks. To allow simultaneous updates to distinct grid elements, each element should have a different lock.
 
-In version 5, you will implement this strategy. You should not use the ForkJoin Framework; it is not designed to allow synchronization operations inside of it other than join. Instead you will need to take the "old-fashioned" approach of using explicit threads. It is okay to set the number of threads to be a static constant, such as 4.
 
-How you manage locks is up to you. You could have the grid store objects and lock those, or you could have a separate grid of just locks. Note that after the first grid-building step, you will not need to acquire locks anymore (use join to make sure the grid-building threads are done!).
 
-Note you do not need to re-implement the code for finding corners of the country. Use the ForkJoin Framework code from versions 2 and 4. You also do not need to re-implement the second grid-building step. You are just re-implementing the first grid-building step using Java threads, a shared data structure, and locks.
+
